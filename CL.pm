@@ -2,10 +2,15 @@ package Astro::IRAF::CL;
 use strict;
 use warnings;
 
+$SIG{INT} = sub {die}; # Without this DESTROY() does not get called 
+		       # when ctrl-c is used for some reason.
+
 use Carp;
 use vars qw($VERSION $AUTOLOAD $TIMEOUT);
 
-$VERSION = '0.1.2';
+$VERSION = '0.2.0';
+
+use Fcntl qw(:DEFAULT);
 
 use Cwd;
 use Expect 1.15;
@@ -38,7 +43,7 @@ sub new{
 
   $self->{'packages'}        = []; # For loading/unloading packages.
   $self->{'command_history'} = [];
-  $self->{'dead'}            = 0;
+  $self->{'dead'}            = 1; # It is dead until the CL is running.
 
   $self->{'session'} = $self->_startup;
 
@@ -95,15 +100,36 @@ sub _get_iraf_start{
   return $startdir;
 }
 
+sub _lock_startdir{
+  my $self = shift @_;
+
+  sysopen(STARTDIR,"$self->{'iraf_start'}/Astro-IRAF-CL.LOCK",O_WRONLY|O_CREAT|O_EXCL) or croak "\nERROR: Could not get a lock on $self->{'iraf_start'}: $!\n\nThis IRAF start directory is already in use by another Astro::IRAF::CL object,\nyou must specify a different starting position via the iraf_start parameter.\n\nDied";
+
+  $self->{'STARTDIR_FH'} = *STARTDIR;
+
+}
+
+sub _unlock_startdir{
+  my $self = shift @_;
+
+  close ($self->{'STARTDIR_FH'}) or croak "could not close lock FH";
+  unlink "$self->{'iraf_start'}/Astro-IRAF-CL.LOCK";
+
+}
+
 sub _startup{
   my $self = shift @_;
 
-  chdir $self->{'iraf_start'} || croak "Could not cd to $self->{'iraf_start'}";
+  $self->_lock_startdir;
+
+  chdir $self->{'iraf_start'} ||croak "Could not cd to $self->{'iraf_start'}";
 
   my $t = Expect->spawn('cl') || croak "Cannot spawn CL: $!";
 
   $t->expect(30,'-re',$self->{'cl_prompt'});
   croak "Did not get CL prompt after starting up" if $t->error;
+
+  $self->{'dead'} = 0; # It is now alive.
 
   my $output = $t->before();
   my @output = split /\n/,$output;
@@ -796,6 +822,8 @@ sub end{
   $t->expect($TIMEOUT,"logout\r\n");
 
   $t->soft_close();
+
+  $self->_unlock_startdir;
 
   $self->{'dead'} = 1;
 }

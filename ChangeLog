@@ -1,3 +1,17 @@
+Astro::IRAF::CL (0.2.0) stable;
+
+  * Added a locking system for the IRAF start directory that the module
+    uses, without this two objects using the same start directory and
+    IRAF commands could encounter parameter collision resulting in a
+    CL crash. Or worse could result in your data being badly screwed,
+    to my mind this is an IRAF problem that I am just working around.
+	
+  * Added a very simple interrupt (ctrl-c) handler as for some reason
+    DESTROY() was not being called if a script was prematurely ended 
+    using ctrl-c. All it does is call die() which does the right thing.
+
+ -- Stephen Quinney <irafperl@jadevine.org.uk>  Fri,  9 Aug 2002 15:56:30 +0100
+
 Astro::IRAF::CL (0.1.2) stable;
 
   * Added a warning_handler to the exec() routine, by default it just
@@ -5,6 +19,7 @@ Astro::IRAF::CL (0.1.2) stable;
   * Fixed the mycl example script which had a couple of errors
 
  -- Stephen Quinney <irafperl@jadevine.org.uk>  Fri,  9 Aug 2002 15:22:42 +0100
+
 Astro::IRAF::CL (0.1.1) stable;
 
   * Added a test to see if use-ing the module works
