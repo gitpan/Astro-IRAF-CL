@@ -7,9 +7,9 @@ getopts('hs:ve:t:');
 
 use Astro::IRAF::CL;
 
-&usage() if $opt_h || if !defined $opt_e;
+&usage() if $opt_h || !defined $opt_e;
 
-my $iraf = Astro::IRAF::CL->new(iraf_start => $opt_s
+my $iraf = Astro::IRAF::CL->new(iraf_start => $opt_s,
 				debug => $opt_v);
 
 my @results = $iraf->exec(command => $opt_e,

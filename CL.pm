@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 use vars qw($VERSION $AUTOLOAD $TIMEOUT);
 
-$VERSION = '0.1';
+$VERSION = '0.1.2';
 
 use Cwd;
 use Expect 1.15;
@@ -351,6 +351,24 @@ sub set_log{
 
 ## Error handlers.
 
+sub cl_warning_handler{
+  my ($self,$command,$handler) = @_;
+
+  my $session = $self->{'session'};
+  $session->expect($TIMEOUT,'-re',$self->{'cl_prompt'});
+
+  my $error = $session->before();
+
+  print STDERR "The command $command encountered a CL Warning:\n\n$error\n";
+
+  if (defined $handler){
+    print STDERR "Passing off to warning handler\n";
+    $handler->($self);
+  }
+
+  return;
+}
+
 sub cl_error_handler{
   my ($self,$command,$handler) = @_;
 
@@ -590,10 +608,11 @@ sub exec{
 
   my $timeout = defined $params{'timeout'} ? $params{'timeout'} : undef;
   my $error_handler   = $params{'error_handler'}   || undef;
+  my $warning_handler = $params{'warning_handler'} || undef;
   my $death_handler   = $params{'death_handler'}   || undef;
   my $timeout_handler = $params{'timeout_handler'} || undef;
 
-  my ($q_timeout,$q_eof,$q_error,$q_warning,$not_available) = (0,0,0,0);
+  my ($q_timeout,$q_eof,$q_error,$q_warning,$not_available) = (0,0,0,0,0);
 
   my @output;
 
@@ -658,13 +677,16 @@ sub exec{
     $t->expect($timeout,
 	       [timeout => sub {&timeout_handler($self,$command,$timeout,
 						 $timeout_handler);
-				$q_timeout = 1}],
+				$q_timeout = 1; exp_continue}],
 	       [eof     => sub {&eof_handler($self,$command,
 					     $death_handler);
-				$q_eof = 1}],
+				$q_eof = 1; exp_continue}],
+	       '-re','^Warning:',sub {&cl_warning_handler($self,$command,
+							  $warning_handler);
+				    $q_warning = 1; exp_continue},
 	       '-re','^ERROR:',sub {&cl_error_handler($self,$command,
 						      $error_handler);
-				    $q_error = 1},
+				    $q_error = 1; exp_continue},
 	       '-ex','No help available for',sub{print STDERR "No help available for $helpname\n";
 						 $not_available = 1;
 					       },

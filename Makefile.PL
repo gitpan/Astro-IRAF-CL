@@ -3,6 +3,7 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 
 WriteMakefile(
+	      'AUTHOR'	     => 'Stephen Quinney',
 	      'NAME'	     => 'Astro::IRAF::CL',
 	      'VERSION_FROM' => 'CL.pm',
 	      'PREREQ_PM'    => {
@@ -10,6 +11,6 @@ WriteMakefile(
                                   'IO::Pty' => 1.00,
 				  'Expect'  => 1.15,
 				},
-	      'clean'        => { 'FILES' => '*.log' },
+	      'clean'        => { 'FILES' => '*.log *~' },
 	      'dist'         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
 	      );

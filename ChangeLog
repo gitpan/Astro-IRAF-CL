@@ -1,8 +1,15 @@
+Astro::IRAF::CL (0.1.2) stable;
+
+  * Added a warning_handler to the exec() routine, by default it just
+    prints out the warning and continues.
+  * Fixed the mycl example script which had a couple of errors
+
+ -- Stephen Quinney <irafperl@jadevine.org.uk>  Fri,  9 Aug 2002 15:22:42 +0100
 Astro::IRAF::CL (0.1.1) stable;
 
   * Added a test to see if use-ing the module works
   
- -- Stephen Quinney <irafperl@jadevine.org.uk>  Sat, 03 Aug 2002 21:24:10 +0100
+ -- Stephen Quinney <irafperl@jadevine.org.uk>  Sat,  3 Aug 2002 21:24:10 +0100
 
 Astro::IRAF::CL (0.1) stable;
 
