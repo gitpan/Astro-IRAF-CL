@@ -1,3 +1,9 @@
+Astro::IRAF::CL (0.1.1) stable;
+
+  * Added a test to see if use-ing the module works
+  
+ -- Stephen Quinney <irafperl@jadevine.org.uk>  Sat, 03 Aug 2002 21:24:10 +0100
+
 Astro::IRAF::CL (0.1) stable;
 
   * First release to CPAN

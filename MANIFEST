@@ -6,3 +6,4 @@ ChangeLog
 GPL
 examples/mycl
 examples/irafhelp
+t/use.t
